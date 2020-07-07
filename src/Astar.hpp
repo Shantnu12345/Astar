@@ -3,22 +3,33 @@
 #include <vector>
 #include <queue>
 #include <cmath>
+#include <algorithm>
 using namespace std;
 
-const bool PI    = 3.14f;
-const bool TwoPI = 2*PI;
+const float PI    = 3.14f;
+const float TwoPI = 2*PI;
 
 class State{
 public:
     float x;
     float y;
     float yaw; //rad
-    State(float const x, float const y, float const yaw):x(x), y(y), yaw(yaw) {}
+    State(float const x=0.0f, float const y=0.0f, float const yaw=0.0f):x(x), y(y), yaw(yaw) {}
+    float distanceTo (State const& that){
+        return  (x - that.x)*(x - that.x) + (y-that.y)*(y-that.y);
+    } 
+
+    friend ostream& operator<< (std::ostream& os, State const & s){
+        os << "(" << s.x << "," << s.y << "," << s.yaw << ",)" << endl;
+
+        return os;
+    }
 };
 
 enum Action{
     STRAIGHT,
-    ROTATE
+    ROTATE,
+    MAXACTION
 };
 
 class Node{
@@ -26,36 +37,62 @@ public:
     int   idx;
     State state;
     float cost;
-    float heuristic;
+    float heur;
     float total;
-    unique_ptr<Node> parent;
+    shared_ptr<Node> parent;
 
-    Node(int idx, State const& s, float cost, float heuristic, float total, unique_ptr<Node> parent) :
-        idx(idx), state(s), cost(cost), heuristic(heuristic), total(total), parent(move(parent)){}
+    Node(int idx, State const& s, float cost, float h, shared_ptr<Node> parent) :
+        idx(idx), state(s), cost(cost), heur(h), total(cost + h), parent(parent){}
 };
 
 struct Cmp{
-    bool operator () (Node const& n1, Node const& n2){
-        return n1.total < n2.total;
+    bool operator () (shared_ptr<Node> const& n1, shared_ptr<Node> const& n2){
+        return n1->total > n2->total;
     } 
 };
 
 class Astar{
 public:
-    Astar(State const& goal) : _goal(goal) {}
-    vector<State> findPath(State const& start){
-        vector<State> result(0, State(0.0f, 0.0f, 0.0f));
+    
+    //Constructor
+    Astar(State const& goal) : _goal(goal), _pq() {}
+    
+    //Path finding function
+    vector<State> findPath(State const& start)
+    {
+        shared_ptr<Node> rootParent(nullptr);
+        shared_ptr<Node> startNode = make_shared<Node>(toIndex(start), start, 0.0f, heuristic(start), rootParent);
+
+        _pq.push(startNode);
+
+        while(_pq.size() > 0){
+            shared_ptr<Node> top = _pq.top(); _pq.pop();
+
+            //cout<<top->state;
+            //std::cin.get();
+
+            if(isGoal(top->state)){
+                vector<State> result;
+                while(top->parent.get() != nullptr){
+                    result.push_back(top->state);
+                    //cout<<top->state;
+                    //cin.get();
+                    top = top->parent;
+                }
+                reverse(result.begin(), result.end());
+                return result;
+            }
+            
+            for(int action=STRAIGHT; action<MAXACTION; action++){
+                State ns = nextState(top->state, (Action) action);     
+                //cout<<"["<<ns; 
+                shared_ptr<Node> neighbor = make_shared<Node>(toIndex(ns), ns, top->cost + top->state.distanceTo(ns), heuristic(ns), top);
+                _pq.push(neighbor);
+            }
         
-        Node startNode()
-        
-        
-        
-        
-        
-        
-        
-        
-        return result; 
+        }           
+
+        return vector<State>(); 
     }
 
 protected:
@@ -72,8 +109,15 @@ protected:
         return idx;
     }
 
+    bool isGoal(State s){
+        return  (      (std::fabs(s.x - _goal.x) < goalXTol)
+                    && (std::fabs(s.y - _goal.y) < goalYTol)
+                    && (std::fabs(s.yaw - _goal.yaw) < goalYawTol)
+                );
+    }
+
     float heuristic(State s){
-        return std::sqrt( (s.x - _goal.x)*(s.x - _goal.x) + (s.y - _goal.y)*(s.y - _goal.y) );
+        return s.distanceTo(_goal);
     }
 
     float normalize(float angle, float ref = -PI){
@@ -97,19 +141,24 @@ protected:
 
             case ROTATE:
             {
-                return State(s.x, s.y, s.yaw + 2*v*dt/len);
+                return State(s.x, s.y, normalize( s.yaw + 2*v*dt/len));
+                break;
             }
         }
     }
 
-    std::priority_queue<Node, vector<Node>, Cmp> _pq; 
-    unsigned int _xIntervals   =  100;    //0.2m tolerance
-    unsigned int _yIntervals   =  100;    //0.2m tolerance
-    unsigned int _yawIntervals =  120;     // 3.0 deg tolerance
+    std::priority_queue<shared_ptr<Node>, vector<shared_ptr<Node>>, Cmp> _pq; 
+    unsigned int _xIntervals   =  100;    //0.2m bin size
+    unsigned int _yIntervals   =  100;    //0.2m bin size
+    unsigned int _yawIntervals =  120;     // 3.0 deg bin size
     float _xmin                = -100.0f;
     float _ymin                = -100.0f;
     float _xmax                =  100.0f;
     float _ymax                =  100.0f;
+    float goalXTol             =  2.0f;
+    float goalYTol             =  2.0f;
+    float goalYawTol           =  3.0f * PI/180.0f;   //3.0 deg
+
     State _goal;
 
 };

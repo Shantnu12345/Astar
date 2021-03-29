@@ -7,4 +7,6 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 project(Planner)
 
-add_executable(Planner src/main.cpp src/Planner.cpp)
+include_directories(./src)
+
+add_executable(Planner src/main.cpp )

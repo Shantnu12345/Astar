@@ -1,5 +1,4 @@
-#include <iostream>
-#include "Planner.h"
+#include "Planner.hpp"
 #include <fstream>
 
 void to_csv(vector<State> const& path){
@@ -11,8 +10,8 @@ void to_csv(vector<State> const& path){
 }
 
 int main() {
-    State start(0.0f, 0.0f, PI);
-    State goal(15.0f, 15.0f, PI/2);
+    State start(0.0f, 0.0f, 0.0f);
+    State goal(10.0f, 0.0f, PI/2);
     DifferentialRobot robot(1.0f, 0.25f); 
     Planner planner(robot);
     vector<State> path = planner.findPath(start, goal);

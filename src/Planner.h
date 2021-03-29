@@ -1,7 +1,6 @@
 #pragma once
 #include "helper.h"
 
-
 enum Action
 {
     STRAIGHT,

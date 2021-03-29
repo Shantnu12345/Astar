@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Astar.hpp"
+#include "Planner.h"
 #include <fstream>
 
 void to_csv(vector<State> const& path){
@@ -11,8 +11,11 @@ void to_csv(vector<State> const& path){
 }
 
 int main() {
-    Astar astarAlgo(State(0.0f, 0.0f, PI));
-    vector<State> path = astarAlgo.findPath(State(10.0f, 0.0f, 0.0f));
+    State start(0.0f, 0.0f, PI);
+    State goal(15.0f, 15.0f, PI/2);
+    DifferentialRobot robot(1.0f, 0.25f); 
+    Planner planner(robot);
+    vector<State> path = planner.findPath(start, goal);
     std::cout << "Hurray!! Found path with " << path.size() << " waypoints" << endl ;
     to_csv(path);
     return 0;

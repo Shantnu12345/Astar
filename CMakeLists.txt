@@ -9,4 +9,4 @@ project(Planner)
 
 include_directories(./src)
 
-add_executable(Planner src/main.cpp )
+add_executable(Planner src/main.cpp src/Planner.cpp src/helper.cpp)

@@ -1,5 +1,5 @@
-# CPPND: Capstone Hello World Repo
-For the capstone, I chose to implement an Astar path planning algorithm that finds path for a non-holonomic differential drive robot from a start position to an end position.
+# Description
+Astar path planning algorithm that finds path for a non-holonomic differential drive robot from a start position to an end position.
 
 
 ## Basic Build Instructions
@@ -10,6 +10,8 @@ For the capstone, I chose to implement an Astar path planning algorithm that fin
 4. Run it: `./Planner`.
 5. The result will get saved in "path.csv"
 
+# Side note
+This is not a complete project yet. There are still some problems in the planner, it's not converging for several cases, which will be addressed in future.
 
 
 

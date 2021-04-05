@@ -1,3 +1,5 @@
+//Author: Shantnu Kakkar
+
 #include "helper.h"
 
 float normalize(float angle, float ref)
